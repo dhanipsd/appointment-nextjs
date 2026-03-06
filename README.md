@@ -28,8 +28,8 @@ A production-ready generic appointment booking template built with the modern Ne
 ### 1. Clone & Install
 Clone the repository and install the dependencies:
 ```bash
-git clone https://github.com/your-username/your-appointment-template.git
-cd your-appointment-template
+git clone https://github.com/dhanipsd/appointment-nextjs.git
+cd appointment-nextjs
 npm install
 ```
 
