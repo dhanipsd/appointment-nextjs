@@ -4,6 +4,7 @@ import { useSession } from "next-auth/react";
 import { useEffect, useState } from "react";
 import { format } from "date-fns";
 import { Calendar, Clock, Trash2 } from "lucide-react";
+import Link from "next/link";
 
 export default function DashboardPage() {
     const { data: session } = useSession();
@@ -52,13 +53,21 @@ export default function DashboardPage() {
 
     return (
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="mb-8">
-                <h1 className="text-3xl font-bold text-gray-900">
-                    {isAdmin ? "Admin Dashboard" : "My Appointments"}
-                </h1>
-                <p className="mt-2 text-gray-600">
-                    Welcome back, {session?.user?.name || session?.user?.email}
-                </p>
+            <div className="mb-8 flex items-center justify-between">
+                <div>
+                    <h1 className="text-3xl font-bold text-gray-900">
+                        {isAdmin ? "Admin Dashboard" : "My Appointments"}
+                    </h1>
+                    <p className="mt-2 text-gray-600">
+                        Welcome back, {session?.user?.name || session?.user?.email}
+                    </p>
+                </div>
+                <Link
+                    href="/"
+                    className="flex items-center gap-2 px-5 py-2.5 bg-indigo-50 text-indigo-600 rounded-xl font-semibold hover:bg-indigo-600 hover:text-white transition-colors"
+                >
+                    Browse Services
+                </Link>
             </div>
 
             <div className="bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] border border-gray-100 overflow-hidden">
@@ -82,7 +91,8 @@ export default function DashboardPage() {
                                     <div className="flex items-center gap-3 mb-2">
                                         <h3 className="text-lg font-bold text-gray-900">{appt.service.name}</h3>
                                         <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium ${appt.status === "CONFIRMED" ? "bg-green-100 text-green-800" :
-                                                appt.status === "CANCELLED" ? "bg-red-100 text-red-800" :
+                                            appt.status === "CANCELLED" ? "bg-red-100 text-red-800" :
+                                                appt.status === "COMPLETED" ? "bg-blue-100 text-blue-800" :
                                                     "bg-yellow-100 text-yellow-800"
                                             }`}>
                                             {appt.status}

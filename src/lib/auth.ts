@@ -1,11 +1,10 @@
 import { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import { prisma } from "@/lib/prisma";
 import bcrypt from "bcryptjs";
+import { findUser, createUser } from "@/lib/data";
 
 export const authOptions: NextAuthOptions = {
-    adapter: PrismaAdapter(prisma) as any,
+    secret: process.env.NEXTAUTH_SECRET || "demo-secret-key-for-appointment-app-2026",
     session: { strategy: "jwt" },
     pages: {
         signIn: "/login",
@@ -20,30 +19,24 @@ export const authOptions: NextAuthOptions = {
             async authorize(credentials) {
                 if (!credentials?.email || !credentials?.password) return null;
 
-                const user = await prisma.user.findUnique({
-                    where: { email: credentials.email }
-                });
+                let user = findUser(credentials.email);
 
-                if (!user || (!user.password && user.email !== "admin@example.com")) return null;
-
-                // For demo purposes, we automatically create the admin user if it's the first login
+                // Auto-create demo users on first login
                 if (!user && (credentials.email === "admin@example.com" || credentials.email === "customer@example.com")) {
                     const hashedPassword = await bcrypt.hash(credentials.password, 10);
-                    const newUser = await prisma.user.create({
-                        data: {
-                            email: credentials.email,
-                            name: credentials.email === "admin@example.com" ? "Admin User" : "Customer User",
-                            password: hashedPassword,
-                            role: credentials.email === "admin@example.com" ? "ADMIN" : "USER"
-                        }
+                    user = createUser({
+                        name: credentials.email === "admin@example.com" ? "Admin User" : "Customer User",
+                        email: credentials.email,
+                        password: hashedPassword,
+                        role: credentials.email === "admin@example.com" ? "ADMIN" : "USER"
                     });
-                    return { id: newUser.id, email: newUser.email, name: newUser.name, role: newUser.role };
+                    return { id: user.id, email: user.email, name: user.name, role: user.role };
                 }
 
-                if (user && user.password) {
-                    const isValid = await bcrypt.compare(credentials.password, user.password);
-                    if (!isValid) return null;
-                }
+                if (!user || !user.password) return null;
+
+                const isValid = await bcrypt.compare(credentials.password, user.password);
+                if (!isValid) return null;
 
                 return { id: user.id, email: user.email, name: user.name, role: user.role };
             }
